@@ -1,0 +1,107 @@
+* { 
+    margin: 0; 
+    padding: 0;
+}
+html, body { 
+    height: 100vh;
+}
+html{
+    font-size:62.5%;
+}
+body { 
+    background: #fff; 
+}
+.flex { 
+    display: flex;
+ }
+ .flex-row { 
+    flex-direction: row; /*决定主轴的方向 row | row-reverse | column | column-reverse 上 | 下 | 右 | 左*/
+    justify-content: center; /*定义了项目在主轴上的对齐方式*/
+    align-items: center; /*定义项目在交叉轴上如何对齐*/
+}
+
+.wrap { 
+    width: 100vw;
+ }
+
+.wrap .reference { 
+    position: relative; 
+    background-color: rgba(255, 255, 255, 0); 
+}
+
+.wrap .reference img.face { 
+    display: block; 
+    width: 100vw; 
+    height: auto; 
+ }
+
+.wrap .reference img.toggle { 
+    position: absolute; 
+    right: 1rem; 
+    top: 1rem; 
+    width: 5rem; 
+    height: 5rem; 
+}
+
+.wrap .scan video { 
+    background-color: rgba(0, 0, 0, .8); 
+}
+
+.wrap .control { 
+    display: flex;
+    height: 30rem; 
+    justify-content: space-around; 
+}
+
+.wrap .control p { 
+    width: 8rem; 
+    height: 3rem; 
+    background-color: #f9f9f9; 
+    text-align: center; 
+    line-height: 3rem; 
+    color: #ffffff; 
+    margin-top: 1rem;
+    font-size: 1.4rem; 
+    border-radius: .8rem; 
+    cursor: pointer; 
+    box-shadow: -8px -8px 150px -8px #b2b3b5 inset, 0 0 5px #222222; 
+    text-shadow: 0 0 1px #222222; 
+    transition: .5s; 
+}
+
+.wrap .control p:hover { 
+    box-shadow: -8px -8px 150px -8px #50c4f1 inset, 0 0 5px #ffffff; 
+}
+
+.wrap .scan { 
+    position: relative; 
+    overflow: hidden; 
+}
+
+.wrap .scan .strainer { 
+    position: absolute; 
+    top: 0; 
+    width: 100vw; 
+    z-index: 999; 
+    height: .3rem; 
+}
+
+.wrap .scan .capture { 
+    width: 100vw; 
+    height: 28rem; 
+}
+
+.wrap .scan canvas { 
+    width: 100vw; 
+}
+
+.wrap .scan .strainer.on { 
+    background: linear-gradient(to left, transparent, #0bffb2, transparent); 
+    animation: scan 1s linear infinite; 
+}
+
+@keyframes scan {
+    0% { top: 1rem; }
+    50% { top: 30rem; }
+    100% { top: 1rem; }
+} 

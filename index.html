@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <!--
+         meta viewport标签设置手机端配置：
+            width            设置viewport宽度，为一个正整数，或字符串‘device-width’
+            device-width     设备宽度
+            height           设置viewport高度，一般设置了宽度，会自动解析出高度，可以不用设置
+            initial-scale    默认缩放比例（初始缩放比例），为一个数字，可以带小数
+            minimum-scale    允许用户最小缩放比例，为一个数字，可以带小数
+            maximum-scale    允许用户最大缩放比例，为一个数字，可以带小数
+            user-scalable    是否允许手动缩放
+    -->
+    <title>人脸声纹demo</title>
+    <link href="./style/index.css" rel="stylesheet"/>
+</head>
+<body>
+   
+<div class="wrap">
+    
+    <div class="scan reference">
+        <div class="strainer"></div>
+        <video class="capture" width="300" height="250"></video>
+    </div>
+
+    <div class="control">
+        <p class="open">开启摄像头</p>
+        <p class="recognition">人脸识别</p>
+        <p class="close">关闭摄像头</p>
+    </div>
+
+
+    <input type="file" name="file" accept="image/*" capture="camera">
+</div>
+<!--谷歌工具 用来开发调试摄像头控制台-->
+<script type="text/javascript" src="./js/vconsole.min.js"></script>
+<script type="text/javascript">
+    
+    const oCapture = document.querySelector(".capture");  //获取到video
+    const open = document.querySelector(".open");  //获取按钮打开摄像头
+    const recognition = document.querySelector(".recognition"); //获取按钮人脸识别
+    const close = document.querySelector(".close");  //获取到按钮关闭摄像头
+    const control = document.querySelector(".control"); //获取到按钮行
+    let buffer;   
+
+    
+    /*
+      navigator.getUserMedia(constraints, successCallback, errorCallback);  获取手机设备摄像头(老的API)
+      navigator.getUserMedia(constraints).then(successCallback).catch(errorCallback)  获取手机设备摄像头(新的API)
+    */
+    //调用手机设备摄像头兼容设置
+    window.navigator.getUserMedia = navigator.getUserMedia || navigator.webKitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+    //调用手机设备开启手机摄像头
+    function carera(){
+
+        //判断如果获取到了手机设备的摄像头
+        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){ //最新的标准API
+            
+            //摄像头调用自动显示前置摄像头
+            navigator.mediaDevices.getUserMedia({
+                'audio':true,  //开启音频效果
+                'video':{ 'facingMode': "user" } //调用前置摄像头，后置摄像头使用 video: { facingMode: { exact: "environment" } }
+            })
+
+            //获取到前置摄像头调用成功执行处理函数
+            .then(function(mediaStream){   
+                getVideoStream(mediaStream);  //获取到视频的媒体流
+            })
+            //发生错误的执行处理函数
+            .catch(function(error){    
+                console.log(error)
+            })
+
+        }else if(navigator.getUserMedia){ //如果获取到了手机设备的摄像头
+
+            navigator.getUserMedia({   //旧版API
+                'video':true,
+                'audio':true
+            },getVideoStream,getFail)
+
+        }else{
+
+            alert('不支持摄像头调用！');
+
+        }
+    }
+
+    //调用摄像头成功获取到视频媒体流
+    function getVideoStream(stream){
+        buffer = stream;  //将视频流设置为video元素的源
+
+        //如果视频对象不为undefined的时候
+        if(oCapture.mozSrcObject !== undefined){
+
+            oCapture.mozSrcObject = buffer;   //将视频流设置为video元素的源
+
+        }else{ //否则视频对象为undefined的时候 创建视频地址路径
+
+            oCapture.src = window.URL && window.URL.createObjectURL(buffer);   //获得一个http格式的url路径         
+
+        }
+
+        oCapture.play();  //开始播放当前的音频
+    }
+
+    function getFail(){
+
+    }
+
+    //当点击相应的按钮执行相应的函数
+    control.addEventListener('click',function(e){
+        e = e || window.event;
+        let className = e.target.className;
+
+        switch(className){
+            case 'open':
+            carera();
+            break;
+            case 'close':
+            closeCamera();
+            break;
+            case 'recognition':
+            screenShot();
+            break;
+            default:
+            break;
+        }
+    })
+
+    //关闭摄像头
+    function closeCamera(){
+        buffer && buffer.getTracks()[1].stop();//关闭摄像头
+    }
+
+    //requestAnimFrame 缓动函数 更好的实现浏览器经动画 
+    //浏览器的兼容设置
+    window.requestAnimFrame = (function(){
+        return  window.requestAnimationFrame       ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame    ||
+                function( callback ){
+                    window.setTimeout(callback, 1000 / 60); //定义每秒执行60次动画
+                };
+    })();
+
+    //绘制画布人脸识别
+    function screenShot(){
+        let canvas = document.createElement('canvas'); //创建canvas画布
+        canvas.width= 300,canvas.height = 250;   //画布宽高
+        document.querySelector(".reference").appendChild(canvas); //将画布插入到wrap标签中
+        let ctx =  canvas.getContext('2d');  //创建context对象，对象内置有多种回执路径、矩形、圆形、字符以及添加图像的方法
+
+        //绘制画布
+        function drawVideo(){
+            ctx.drawImage(oCapture,0,0,300,250); //在画布上绘制图像视频 并给予这个图像的宽高
+            ctx.font = "1.6rem Arial";     //设置画布的字体大小以及字体
+            ctx.fillStyle = "blue";           //设置字体的颜色
+            ctx.fillText("请眨眼", 120, 30);    //ctx.fillText('画布中输出的文本',x轴坐标,y轴坐标)
+            requestAnimationFrame(drawVideo); //针对动画效果  进行递归调用 
+        }
+        window.requestAnimationFrame(drawVideo);  //调用画布形成动画效果
+    }
+</script>
+</body>
+</html>
